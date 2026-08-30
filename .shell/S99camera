@@ -121,19 +121,12 @@ up() {
         [ ${ZLANG} != 'ru' ] && echo "Camera started" >>${MOD_CONF}/mod_data/log/cam/cam.log || echo "Запуск камеры завершен" >>${MOD_CONF}/mod_data/log/cam/cam.log
     else
         [ ${ZLANG} != 'ru' ] && echo "Camera not found $VIDEO" >>${MOD_CONF}/mod_data/log/cam/cam.log || echo "Камера не существует $VIDEO" >>${MOD_CONF}/mod_data/log/cam/cam.log
-        cd /dev/
-        ls -1 video? | while read a; do
-            if ${V4l2} -d /dev/$a --list-formats-ext 2>/dev/null |grep MJPG >/dev/null 2>/dev/null; then
-                [ ${ZLANG} != 'ru' ] && echo "Test Run: CAMERA_ON VIDEO=$a" >>/opt/config/mod_data/log/cam/cam.log || echo "Попробуйте ввести: CAMERA_ON VIDEO=$a" >>${MOD_CONF}/mod_data/log/cam/cam.log
-            fi
-        done
+        [ ${ZLANG} != 'ru' ] && echo "Automatic /dev/video* probing suppressed for safety; configure VIDEO explicitly." >>/opt/config/mod_data/log/cam/cam.log || echo "Автопоиск /dev/video* отключен для безопасности; укажите VIDEO явно." >>${MOD_CONF}/mod_data/log/cam/cam.log
     fi
-    ${V4l2} --all >>${MOD_CONF}/mod_data/log/cam/camera.log 2>&1
-    ls -1 /dev/video? | while read a; do
-        echo "$a" >>${MOD_CONF}/mod_data/log/cam/camera.log
-        ${V4l2} -d $a --list-formats >>${MOD_CONF}/mod_data/log/cam/camera.log 2>&1
-        ${V4l2} -d $a --list-formats-ext >>${MOD_CONF}/mod_data/log/cam/camera.log 2>&1
-    done;
+    if [ -c /dev/$VIDEO ]; then
+        echo "/dev/$VIDEO" >>${MOD_CONF}/mod_data/log/cam/camera.log
+        ${V4l2} -d /dev/$VIDEO --all >>${MOD_CONF}/mod_data/log/cam/camera.log 2>&1
+    fi
 }
 
 stop() {
